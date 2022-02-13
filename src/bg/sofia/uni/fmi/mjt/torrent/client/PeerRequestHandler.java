@@ -1,9 +1,11 @@
-package bg.sofia.uni.fmi.mjt.torrent.server;
+package bg.sofia.uni.fmi.mjt.torrent.client;
 
 import bg.sofia.uni.fmi.mjt.torrent.server.commands.ListFilesCommand;
 import bg.sofia.uni.fmi.mjt.torrent.server.commands.RegistrationCommand;
 import bg.sofia.uni.fmi.mjt.torrent.server.commands.TorrentServerCommand;
-import bg.sofia.uni.fmi.mjt.torrent.server.commands.TorrentServerCommandResponse;
+import bg.sofia.uni.fmi.mjt.torrent.server.commands.ClientRequest;
+import bg.sofia.uni.fmi.mjt.torrent.server.commands.ClientRequestError;
+import bg.sofia.uni.fmi.mjt.torrent.server.commands.TorrentServerResponse;
 import bg.sofia.uni.fmi.mjt.torrent.server.commands.UnregistrationCommand;
 
 import java.io.BufferedReader;
@@ -15,10 +17,10 @@ import java.io.Writer;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
-public class TorrentServerRequestHandler implements Runnable {
+public class PeerRequestHandler implements Runnable {
     private final Socket socket;
 
-    public TorrentServerRequestHandler(Socket socket) {
+    public PeerRequestHandler(Socket socket) {
         this.socket = socket;
     }
 
@@ -33,23 +35,23 @@ public class TorrentServerRequestHandler implements Runnable {
             )
         ) {
             String inputLine = in.readLine();
-            System.out.println("Message received from client: " + inputLine);
-            String[] lineParts = inputLine.split(TorrentServerCommand.COMMAND_PARTS_SEPARATOR);
+            System.out.println("Message received from peer: " + inputLine);
+            ClientRequest request = new ClientRequest(
+                inputLine,
+                socket.getInetAddress().getHostAddress(),
+                socket.getPort()
+            );
 
-            // TODO what if inputLine is empty?
-            // TODO what if command should take arguments, but none provided? What if 0 files are provided?
-            String command = lineParts[0];
-
-            TorrentServerCommand torrentServerCommand = switch (command) {
+            TorrentServerCommand torrentServerCommand = switch (request.command()) {
                 case "register" -> new RegistrationCommand();
                 case "unregister" -> new UnregistrationCommand();
                 case "list-files" -> new ListFilesCommand();
-                default -> unknownCommand -> new TorrentServerCommandResponse("1");
+                default -> unknownCommand -> new TorrentServerResponse("1");
             };
-            TorrentServerCommandResponse response = torrentServerCommand.execute(inputLine);
+            TorrentServerResponse response = torrentServerCommand.execute(request);
             out.write(response.toString());
             out.flush();
-        } catch (IOException e) {
+        } catch (IOException | ClientRequestError e) {
             System.out.println(e.getMessage());
         } finally {
             try {

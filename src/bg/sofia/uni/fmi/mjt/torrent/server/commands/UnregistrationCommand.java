@@ -1,23 +1,16 @@
 package bg.sofia.uni.fmi.mjt.torrent.server.commands;
 
 import bg.sofia.uni.fmi.mjt.torrent.server.FilesAvailabilityInfo;
-import bg.sofia.uni.fmi.mjt.torrent.server.TorrentFile;
-import bg.sofia.uni.fmi.mjt.torrent.server.User;
-
-import java.util.Arrays;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class UnregistrationCommand implements TorrentServerCommand {
     @Override
-    public TorrentServerCommandResponse execute(String command) {
+    public TorrentServerResponse execute(ClientRequest request) throws ClientRequestError {
+        if (request.user() == null) {
+            throw new ClientRequestError("Missing user in unregister command!");
+        }
+
         FilesAvailabilityInfo filesAvailabilityInfo = FilesAvailabilityInfo.getInstance();
-        String[] commandParts = command.split(COMMAND_PARTS_SEPARATOR, COMMAND_PARTS_COUNT);
-        User user = new User(commandParts[USER_IDX], "", "");
-        Set<TorrentFile> files = Arrays.stream(commandParts[FILES_IDX].split(FILES_SEPARATOR))
-            .map(TorrentFile::new)
-            .collect(Collectors.toSet());
-        filesAvailabilityInfo.setFilesUnavailable(user, files);
-        return new TorrentServerCommandResponse("0");
+        filesAvailabilityInfo.setFilesUnavailable(request.user(), request.files());
+        return new TorrentServerResponse("0");
     }
 }

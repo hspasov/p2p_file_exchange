@@ -12,10 +12,11 @@ public class ListFilesCommand implements TorrentServerCommand {
     private static final String USER_FILEPATH_SEPARATOR = " : ";
 
     @Override
-    public TorrentServerCommandResponse execute(String command) {
+    public TorrentServerResponse execute(ClientRequest request) {
         FilesAvailabilityInfo filesAvailabilityInfo = FilesAvailabilityInfo.getInstance();
         Map<User, Set<TorrentFile>> usersAvailableFiles = filesAvailabilityInfo.getFilesAvailable();
         StringBuilder response = new StringBuilder("0");
+
         for (var entry : usersAvailableFiles.entrySet()) {
             User user = entry.getKey();
             Set<TorrentFile> files = entry.getValue();
@@ -26,6 +27,6 @@ public class ListFilesCommand implements TorrentServerCommand {
                     .append(fileEntry.filePath());
             }
         }
-        return new TorrentServerCommandResponse(response.toString());
+        return new TorrentServerResponse(response.toString());
     }
 }

@@ -9,6 +9,7 @@ import java.util.concurrent.Executors;
 
 public class TorrentServer {
     private static final int SERVER_PORT = 3000;
+    // TODO check what happens when max threads reached
     private static final int MAX_EXECUTOR_THREADS = 100;
 
     public void run() {
@@ -20,9 +21,13 @@ public class TorrentServer {
             while (true) {
                 Socket clientSocket = serverSocket.accept();
 
-                System.out.println("Accepted connection request from client " + clientSocket.getInetAddress());
+                System.out.println("Accepted connection request from client " +
+                    clientSocket.getInetAddress().getHostAddress() +
+                    ":" +
+                    clientSocket.getPort()
+                );
 
-                TorrentServerRequestHandler clientHandler = new TorrentServerRequestHandler(clientSocket);
+                ClientRequestHandler clientHandler = new ClientRequestHandler(clientSocket);
 
                 executor.execute(clientHandler);
             }
