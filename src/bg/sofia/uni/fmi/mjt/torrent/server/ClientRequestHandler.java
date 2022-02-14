@@ -1,12 +1,13 @@
 package bg.sofia.uni.fmi.mjt.torrent.server;
 
+import bg.sofia.uni.fmi.mjt.torrent.exceptions.TorrentRequestException;
+import bg.sofia.uni.fmi.mjt.torrent.server.commands.HelloCommand;
 import bg.sofia.uni.fmi.mjt.torrent.server.commands.ListFilesCommand;
 import bg.sofia.uni.fmi.mjt.torrent.server.commands.ListPeersCommand;
 import bg.sofia.uni.fmi.mjt.torrent.server.commands.RegistrationCommand;
-import bg.sofia.uni.fmi.mjt.torrent.server.commands.TorrentServerCommand;
-import bg.sofia.uni.fmi.mjt.torrent.server.commands.ClientRequest;
-import bg.sofia.uni.fmi.mjt.torrent.server.commands.TorrentServerResponse;
-import bg.sofia.uni.fmi.mjt.torrent.server.commands.ClientRequestError;
+import bg.sofia.uni.fmi.mjt.torrent.TorrentCommand;
+import bg.sofia.uni.fmi.mjt.torrent.PeerRequest;
+import bg.sofia.uni.fmi.mjt.torrent.TorrentResponse;
 import bg.sofia.uni.fmi.mjt.torrent.server.commands.UnregistrationCommand;
 
 import java.io.BufferedReader;
@@ -35,24 +36,23 @@ public class ClientRequestHandler implements Runnable {
                 new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8)
             )
         ) {
+            // TODO check will this block if client does not send a newline?
             String inputLine = in.readLine();
             System.out.println("Message received from client: " + inputLine);
-            ClientRequest request = new ClientRequest(
-                inputLine,
-                socket.getInetAddress().getHostAddress(),
-                socket.getPort()
-            );
+            PeerRequest request = new PeerRequest(inputLine);
 
-            TorrentServerCommand torrentServerCommand = switch (request.command()) {
+            TorrentCommand torrentCommand = switch (request.command()) {
+                case "hello" -> new HelloCommand();
                 case "register" -> new RegistrationCommand();
                 case "unregister" -> new UnregistrationCommand();
                 case "list-files" -> new ListFilesCommand();
                 case "list-peers" -> new ListPeersCommand();
-                default -> unknownCommand -> new TorrentServerResponse("1");
+                default -> unknownCommand -> new TorrentResponse("1");
             };
-            TorrentServerResponse response = torrentServerCommand.execute(request);
+            TorrentResponse response = torrentCommand.execute(request);
+            // TODO what is the size limit for out messages?
             out.println(response.toString());
-        } catch (IOException | ClientRequestError e) {
+        } catch (IOException | TorrentRequestException e) {
             System.out.println(e.getMessage());
         } finally {
             try {

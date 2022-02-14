@@ -1,32 +1,34 @@
 package bg.sofia.uni.fmi.mjt.torrent.server.commands;
 
+import bg.sofia.uni.fmi.mjt.torrent.PeerRequest;
+import bg.sofia.uni.fmi.mjt.torrent.TorrentCommand;
+import bg.sofia.uni.fmi.mjt.torrent.TorrentResponse;
 import bg.sofia.uni.fmi.mjt.torrent.server.FilesAvailabilityInfo;
 import bg.sofia.uni.fmi.mjt.torrent.server.TorrentFile;
-import bg.sofia.uni.fmi.mjt.torrent.server.User;
 
 import java.util.Map;
 import java.util.Set;
 
-public class ListFilesCommand implements TorrentServerCommand {
+public class ListFilesCommand implements TorrentCommand {
     private static final String ENTRY_SEPARATOR = "\n";
     private static final String USER_FILEPATH_SEPARATOR = " : ";
 
     @Override
-    public TorrentServerResponse execute(ClientRequest request) {
+    public TorrentResponse execute(PeerRequest request) {
         FilesAvailabilityInfo filesAvailabilityInfo = FilesAvailabilityInfo.getInstance();
-        Map<User, Set<TorrentFile>> usersAvailableFiles = filesAvailabilityInfo.getFilesAvailable();
+        Map<String, Set<TorrentFile>> usersAvailableFiles = filesAvailabilityInfo.getAvailableFiles();
         StringBuilder response = new StringBuilder("0");
 
         for (var entry : usersAvailableFiles.entrySet()) {
-            User user = entry.getKey();
+            String username = entry.getKey();
             Set<TorrentFile> files = entry.getValue();
             for (var fileEntry : files) {
                 response.append(ENTRY_SEPARATOR)
-                    .append(user.username())
+                    .append(username)
                     .append(USER_FILEPATH_SEPARATOR)
                     .append(fileEntry.filePath());
             }
         }
-        return new TorrentServerResponse(response.toString());
+        return new TorrentResponse(response.toString());
     }
 }

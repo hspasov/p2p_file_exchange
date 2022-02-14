@@ -5,14 +5,12 @@ import bg.sofia.uni.fmi.mjt.torrent.TorrentCommand;
 import bg.sofia.uni.fmi.mjt.torrent.TorrentResponse;
 import bg.sofia.uni.fmi.mjt.torrent.exceptions.TorrentRequestException;
 import bg.sofia.uni.fmi.mjt.torrent.server.FilesAvailabilityInfo;
-import bg.sofia.uni.fmi.mjt.torrent.server.TorrentFile;
+import bg.sofia.uni.fmi.mjt.torrent.Peer;
 
-import java.util.Arrays;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-public class UnregistrationCommand implements TorrentCommand {
-    private static final String FILES_SEPARATOR = ", ";
+public class HelloCommand implements TorrentCommand {
+    private static final String PAYLOAD_PARTS_SEPARATOR = ":";
+    private static final int PAYLOAD_ADDRESS_IDX = 0;
+    private static final int PAYLOAD_PORT_IDX = 1;
 
     @Override
     public TorrentResponse execute(PeerRequest request) throws TorrentRequestException {
@@ -23,11 +21,13 @@ public class UnregistrationCommand implements TorrentCommand {
             throw new TorrentRequestException("Missing payload in unregister command!");
         }
 
-        Set<TorrentFile> files = Arrays.stream(request.payload().split(FILES_SEPARATOR))
-            .map(TorrentFile::new)
-            .collect(Collectors.toSet());
+        String[] payloadParts = request.payload().split(PAYLOAD_PARTS_SEPARATOR);
+        String address = payloadParts[PAYLOAD_ADDRESS_IDX];
+        String port = payloadParts[PAYLOAD_PORT_IDX];
+
         FilesAvailabilityInfo filesAvailabilityInfo = FilesAvailabilityInfo.getInstance();
-        filesAvailabilityInfo.setFilesUnavailable(request.username(), files);
+        filesAvailabilityInfo.setPeerAvailable(new Peer(request.username(), address, Integer.parseInt(port)));
+        // TODO fix these hardcoded status codes
         return new TorrentResponse("0");
     }
 }

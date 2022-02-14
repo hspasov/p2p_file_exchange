@@ -1,5 +1,9 @@
 package bg.sofia.uni.fmi.mjt.torrent.client;
 
+import bg.sofia.uni.fmi.mjt.torrent.Peer;
+
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.util.Scanner;
 
 public class TorrentClient {
@@ -9,20 +13,26 @@ public class TorrentClient {
     // TODO set peers file as parameter
     public static final String PEERS_FILE = "./peers_file.txt";
 
-    void startFetchPeersTimer() {
+    private void startFetchPeersTimer() {
         Thread fetchPeersTimerThread = new Thread(new FetchPeersTimer());
         fetchPeersTimerThread.setDaemon(true);
         fetchPeersTimerThread.start();
     }
 
-    void listenForPeerInput() {
-
+    private Peer startPeerRequestListener() throws IOException {
+        try (ServerSocket serverSocket = new ServerSocket(0)) {
+            Thread peerRequestListenerThread = new Thread(new PeerRequestListener(serverSocket));
+            peerRequestListenerThread.setDaemon(true);
+            peerRequestListenerThread.start();
+            return new Peer(null, serverSocket.getInetAddress().getHostAddress(), serverSocket.getLocalPort());
+        }
     }
 
-    void listenForUserInput() {
+    private void listenForUserInput(Peer peer) {
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
+            // TODO validate all commands - forbid extra space, forbid space in usernames
             System.out.print("TorrentClient=# ");
             String command = scanner.nextLine();
             System.out.println("Command read: " + command);
@@ -31,8 +41,16 @@ public class TorrentClient {
 
     public static void main(String[] args) {
         TorrentClient client = new TorrentClient();
-        client.startFetchPeersTimer();
-        client.listenForPeerInput();
-        client.listenForUserInput();
+        // TODO run hello command
+        // TODO and listen for commands from other peers
+
+        try {
+            client.startFetchPeersTimer();
+            Peer peer = client.startPeerRequestListener();
+            client.listenForUserInput(peer);
+        } catch (IOException e) {
+            // TODO
+            e.printStackTrace();
+        }
     }
 }

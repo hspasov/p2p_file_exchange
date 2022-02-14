@@ -1,5 +1,7 @@
 package bg.sofia.uni.fmi.mjt.torrent.server;
 
+import bg.sofia.uni.fmi.mjt.torrent.Peer;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -8,10 +10,12 @@ import java.util.stream.Collectors;
 
 public class FilesAvailabilityInfo {
     // TODO lock only specific user in set methods
-    private final Map<User, Set<TorrentFile>> usersAvailableFiles;
+    private final Map<String, Peer> availablePeers;
+    private final Map<String, Set<TorrentFile>> usersAvailableFiles;
     private static final FilesAvailabilityInfo instance = new FilesAvailabilityInfo();
 
     private FilesAvailabilityInfo() {
+        this.availablePeers = new HashMap<>();
         this.usersAvailableFiles = new HashMap<>();
     }
 
@@ -19,23 +23,33 @@ public class FilesAvailabilityInfo {
         return FilesAvailabilityInfo.instance;
     }
 
-    public synchronized void setFilesAvailable(User user, Set<TorrentFile> files) {
-        this.usersAvailableFiles.putIfAbsent(user, new HashSet<>());
-        this.usersAvailableFiles.get(user).addAll(files);
+    public synchronized void setPeerAvailable(Peer peer) {
+        // TODO forget after period of time
+        this.availablePeers.put(peer.username(), peer);
+        this.usersAvailableFiles.putIfAbsent(peer.username(), new HashSet<>());
     }
 
-    public synchronized void setFilesUnavailable(User user, Set<TorrentFile> files) {
-        Set<TorrentFile> providedFiles = this.usersAvailableFiles.get(user);
+    public synchronized void setFilesAvailable(String username, Set<TorrentFile> files) {
+        this.usersAvailableFiles.get(username).addAll(files);
+    }
+
+    public synchronized void setFilesUnavailable(String username, Set<TorrentFile> files) {
+        Set<TorrentFile> providedFiles = this.usersAvailableFiles.get(username);
         if (providedFiles == null) {
             return;
         }
         providedFiles.removeAll(files);
         if (providedFiles.isEmpty()) {
-            this.usersAvailableFiles.remove(user);
+            this.usersAvailableFiles.remove(username);
+            this.availablePeers.remove(username);
         }
     }
 
-    public synchronized Map<User, Set<TorrentFile>> getFilesAvailable() {
+    public synchronized Map<String, Peer> getAvailablePeers() {
+        return new HashMap<>(this.availablePeers);
+    }
+
+    public synchronized Map<String, Set<TorrentFile>> getAvailableFiles() {
         return this.usersAvailableFiles.entrySet().stream()
             .collect(Collectors.toMap(Map.Entry::getKey, e -> Set.copyOf(e.getValue())));
     }

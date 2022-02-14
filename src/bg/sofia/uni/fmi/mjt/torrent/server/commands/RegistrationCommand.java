@@ -1,16 +1,33 @@
 package bg.sofia.uni.fmi.mjt.torrent.server.commands;
 
+import bg.sofia.uni.fmi.mjt.torrent.PeerRequest;
+import bg.sofia.uni.fmi.mjt.torrent.TorrentCommand;
+import bg.sofia.uni.fmi.mjt.torrent.TorrentResponse;
+import bg.sofia.uni.fmi.mjt.torrent.exceptions.TorrentRequestException;
 import bg.sofia.uni.fmi.mjt.torrent.server.FilesAvailabilityInfo;
+import bg.sofia.uni.fmi.mjt.torrent.server.TorrentFile;
 
-public class RegistrationCommand implements TorrentServerCommand {
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+public class RegistrationCommand implements TorrentCommand {
+    private static final String FILES_SEPARATOR = ", ";
+
     @Override
-    public TorrentServerResponse execute(ClientRequest request) throws ClientRequestError {
-        if (request.user() == null) {
-            throw new ClientRequestError("Missing user in unregister command!");
+    public TorrentResponse execute(PeerRequest request) throws TorrentRequestException {
+        if (request.username() == null) {
+            throw new TorrentRequestException("Missing user in register command!");
+        }
+        if (request.payload() == null) {
+            throw new TorrentRequestException("Missing payload in register command!");
         }
 
+        Set<TorrentFile> files = Arrays.stream(request.payload().split(FILES_SEPARATOR))
+            .map(TorrentFile::new)
+            .collect(Collectors.toSet());
         FilesAvailabilityInfo filesAvailabilityInfo = FilesAvailabilityInfo.getInstance();
-        filesAvailabilityInfo.setFilesAvailable(request.user(), request.files());
-        return new TorrentServerResponse("0");
+        filesAvailabilityInfo.setFilesAvailable(request.username(), files);
+        return new TorrentResponse("0");
     }
 }

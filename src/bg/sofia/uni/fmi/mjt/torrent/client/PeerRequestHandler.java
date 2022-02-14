@@ -1,12 +1,10 @@
 package bg.sofia.uni.fmi.mjt.torrent.client;
 
-import bg.sofia.uni.fmi.mjt.torrent.server.commands.ListFilesCommand;
-import bg.sofia.uni.fmi.mjt.torrent.server.commands.RegistrationCommand;
-import bg.sofia.uni.fmi.mjt.torrent.server.commands.TorrentServerCommand;
-import bg.sofia.uni.fmi.mjt.torrent.server.commands.ClientRequest;
-import bg.sofia.uni.fmi.mjt.torrent.server.commands.ClientRequestError;
-import bg.sofia.uni.fmi.mjt.torrent.server.commands.TorrentServerResponse;
-import bg.sofia.uni.fmi.mjt.torrent.server.commands.UnregistrationCommand;
+import bg.sofia.uni.fmi.mjt.torrent.PeerRequest;
+import bg.sofia.uni.fmi.mjt.torrent.TorrentCommand;
+import bg.sofia.uni.fmi.mjt.torrent.TorrentResponse;
+import bg.sofia.uni.fmi.mjt.torrent.client.commands.DownloadCommand;
+import bg.sofia.uni.fmi.mjt.torrent.exceptions.TorrentRequestException;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -36,24 +34,20 @@ public class PeerRequestHandler implements Runnable {
         ) {
             String inputLine = in.readLine();
             System.out.println("Message received from peer: " + inputLine);
-            ClientRequest request = new ClientRequest(
-                inputLine,
-                socket.getInetAddress().getHostAddress(),
-                socket.getPort()
-            );
+            PeerRequest request = new PeerRequest(inputLine);
 
-            TorrentServerCommand torrentServerCommand = switch (request.command()) {
-                case "register" -> new RegistrationCommand();
-                case "unregister" -> new UnregistrationCommand();
-                case "list-files" -> new ListFilesCommand();
-                default -> unknownCommand -> new TorrentServerResponse("1");
+            TorrentCommand torrentCommand = switch (request.command()) {
+                case "download" -> new DownloadCommand();
+                default -> unknownCommand -> new TorrentResponse("1");
             };
-            TorrentServerResponse response = torrentServerCommand.execute(request);
+            // TODO allow sending in chunks
+            TorrentResponse response = torrentCommand.execute(request);
             out.write(response.toString());
             out.flush();
-        } catch (IOException | ClientRequestError e) {
+        } catch (IOException | TorrentRequestException e) {
             System.out.println(e.getMessage());
         } finally {
+            // TODO check if should be closed
             try {
                 socket.close();
             } catch (IOException e) {
