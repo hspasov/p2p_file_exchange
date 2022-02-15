@@ -1,15 +1,15 @@
 package bg.sofia.uni.fmi.mjt.torrent;
 
 public class TorrentResponse {
-    private final String content;
+    private final byte[] content;
     private final Integer contentLength;
 
-    public TorrentResponse(String content) {
+    public TorrentResponse(byte[] content) {
         this.content = content;
         this.contentLength = null;
     }
 
-    public TorrentResponse(String content, int contentLength) {
+    public TorrentResponse(byte[] content, int contentLength) {
         this.content = content;
         this.contentLength = contentLength;
     }
@@ -18,8 +18,7 @@ public class TorrentResponse {
         return this.contentLength;
     }
 
-    @Override
-    public String toString() {
+    public byte[] getContent() {
         return this.content;
     }
 }

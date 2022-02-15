@@ -13,18 +13,25 @@ import java.util.stream.Collectors;
 
 public class PeersAvailabilityInfo {
     private Map<String, Peer> availablePeers;
-    private final String peersFile;
+    private String peersFile;
 
     private static final String PEER_ADDRESS_SEPARATOR = " - ";
     private static final String ADDRESS_PORT_SEPARATOR = ":";
-    private static final PeersAvailabilityInfo instance = new PeersAvailabilityInfo(TorrentClient.PEERS_FILE);
+    private static PeersAvailabilityInfo instance;
 
     private PeersAvailabilityInfo(String peersFile) {
         this.availablePeers = new HashMap<>();
         this.peersFile = peersFile;
     }
 
+    public static void setPeersFile(String peersFile) {
+        PeersAvailabilityInfo.instance = new PeersAvailabilityInfo(peersFile);
+    }
+
     public static PeersAvailabilityInfo getInstance() {
+        if (PeersAvailabilityInfo.instance == null) {
+            throw new IllegalStateException("PeersAvailabilityInfo not initialized!");
+        }
         return PeersAvailabilityInfo.instance;
     }
 
@@ -47,7 +54,7 @@ public class PeersAvailabilityInfo {
                 out.flush();
             }
 
-            System.out.println(this.peersFile + " written successfully on disk.");
+            //System.out.println(this.peersFile + " written successfully on disk.");
         } catch (Exception e) {
             e.printStackTrace();
         }

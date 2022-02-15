@@ -19,6 +19,9 @@ public class FetchPeersTimer implements Runnable {
     // TODO inspect if daemon works properly
     private static final long FETCH_INTERVAL_MS = 30_000;
 
+    private final String torrentServerAddress;
+    private final int torrentServerPort;
+
     private static TorrentResponse parseListPeersResponse(String response) {
         final String responsePartsSeparator = " ";
         final int statusCodeIdx = 0;
@@ -26,7 +29,7 @@ public class FetchPeersTimer implements Runnable {
         String[] responseParts = response.split(responsePartsSeparator);
         String statusCode = responseParts[statusCodeIdx];
         int peersCount = Integer.parseInt(responseParts[peersCountIdx]);
-        return new TorrentResponse(statusCode, peersCount);
+        return new TorrentResponse(statusCode.getBytes(StandardCharsets.UTF_8), peersCount);
     }
 
     private static Peer parsePeerResponse(String input) {
@@ -42,21 +45,26 @@ public class FetchPeersTimer implements Runnable {
         return new Peer(username, address, port);
     }
 
+    public FetchPeersTimer(String torrentServerAddress, int torrentServerPort) {
+        this.torrentServerAddress = torrentServerAddress;
+        this.torrentServerPort = torrentServerPort;
+    }
+
     @Override
     public void run() {
         while (true) {
             // TODO if cannot connect to server, load peer data from file
-            try (Socket socket = new Socket(TorrentClient.TORRENT_SERVER_ADDRESS, TorrentClient.TORRENT_SERVER_PORT)) {
+            try (Socket socket = new Socket(this.torrentServerAddress, this.torrentServerPort)) {
                 PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(
                     socket.getOutputStream(), StandardCharsets.UTF_8
                 )), true);
                 BufferedReader in = new BufferedReader(
                     new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8)
                 );
-                System.out.println("Updating available peers from torrent server...");
+                //System.out.println("Updating available peers from torrent server...");
                 out.println("list-peers");
                 String response = in.readLine();
-                System.out.println("Response from server: " + response);
+                //System.out.println("Response from server: " + response);
                 TorrentResponse listPeersResponse = parseListPeersResponse(response);
 
                 Map<String, Peer> availablePeers = new HashMap<>();
@@ -64,14 +72,14 @@ public class FetchPeersTimer implements Runnable {
                 // TODO include timeout
                 for (int peersRead = 0; peersRead < listPeersResponse.contentLength(); peersRead++) {
                     String peerUnparsed = in.readLine();
-                    System.out.println("Response from server: " + peerUnparsed);
+                    //System.out.println("Response from server: " + peerUnparsed);
                     Peer peer = parsePeerResponse(peerUnparsed);
                     availablePeers.put(peer.username(), peer);
                 }
 
                 PeersAvailabilityInfo peersAvailabilityInfo = PeersAvailabilityInfo.getInstance();
                 peersAvailabilityInfo.setAvailablePeers(availablePeers);
-                System.out.println("Peers successfully updated.");
+                //System.out.println("Peers successfully updated.");
             } catch (UnknownHostException e) {
                 e.printStackTrace();
             } catch (IOException e) {

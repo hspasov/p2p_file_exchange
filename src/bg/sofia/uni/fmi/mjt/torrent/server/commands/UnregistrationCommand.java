@@ -7,6 +7,7 @@ import bg.sofia.uni.fmi.mjt.torrent.exceptions.TorrentRequestException;
 import bg.sofia.uni.fmi.mjt.torrent.server.FilesAvailabilityInfo;
 import bg.sofia.uni.fmi.mjt.torrent.server.TorrentFile;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -28,6 +29,6 @@ public class UnregistrationCommand implements TorrentCommand {
             .collect(Collectors.toSet());
         FilesAvailabilityInfo filesAvailabilityInfo = FilesAvailabilityInfo.getInstance();
         filesAvailabilityInfo.setFilesUnavailable(request.username(), files);
-        return new TorrentResponse("0");
+        return new TorrentResponse("0\n".getBytes(StandardCharsets.UTF_8));
     }
 }

@@ -30,16 +30,20 @@ public class FilesAvailabilityInfo {
     }
 
     public synchronized void setFilesAvailable(String username, Set<TorrentFile> files) {
-        this.usersAvailableFiles.get(username).addAll(files);
+        Set<TorrentFile> userAvailableFiles = this.usersAvailableFiles.get(username);
+        if (userAvailableFiles == null) {
+            return;
+        }
+        userAvailableFiles.addAll(files);
     }
 
     public synchronized void setFilesUnavailable(String username, Set<TorrentFile> files) {
-        Set<TorrentFile> providedFiles = this.usersAvailableFiles.get(username);
-        if (providedFiles == null) {
+        Set<TorrentFile> userAvailableFiles = this.usersAvailableFiles.get(username);
+        if (userAvailableFiles == null) {
             return;
         }
-        providedFiles.removeAll(files);
-        if (providedFiles.isEmpty()) {
+        userAvailableFiles.removeAll(files);
+        if (userAvailableFiles.isEmpty()) {
             this.usersAvailableFiles.remove(username);
             this.availablePeers.remove(username);
         }

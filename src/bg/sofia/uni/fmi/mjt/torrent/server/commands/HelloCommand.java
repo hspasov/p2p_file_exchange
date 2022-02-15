@@ -7,6 +7,8 @@ import bg.sofia.uni.fmi.mjt.torrent.exceptions.TorrentRequestException;
 import bg.sofia.uni.fmi.mjt.torrent.server.FilesAvailabilityInfo;
 import bg.sofia.uni.fmi.mjt.torrent.Peer;
 
+import java.nio.charset.StandardCharsets;
+
 public class HelloCommand implements TorrentCommand {
     private static final String PAYLOAD_PARTS_SEPARATOR = ":";
     private static final int PAYLOAD_ADDRESS_IDX = 0;
@@ -15,10 +17,10 @@ public class HelloCommand implements TorrentCommand {
     @Override
     public TorrentResponse execute(PeerRequest request) throws TorrentRequestException {
         if (request.username() == null) {
-            throw new TorrentRequestException("Missing user in unregister command!");
+            throw new TorrentRequestException("Missing user in hello command!");
         }
         if (request.payload() == null) {
-            throw new TorrentRequestException("Missing payload in unregister command!");
+            throw new TorrentRequestException("Missing payload in hello command!");
         }
 
         String[] payloadParts = request.payload().split(PAYLOAD_PARTS_SEPARATOR);
@@ -28,6 +30,6 @@ public class HelloCommand implements TorrentCommand {
         FilesAvailabilityInfo filesAvailabilityInfo = FilesAvailabilityInfo.getInstance();
         filesAvailabilityInfo.setPeerAvailable(new Peer(request.username(), address, Integer.parseInt(port)));
         // TODO fix these hardcoded status codes
-        return new TorrentResponse("0");
+        return new TorrentResponse("0\n".getBytes(StandardCharsets.UTF_8));
     }
 }

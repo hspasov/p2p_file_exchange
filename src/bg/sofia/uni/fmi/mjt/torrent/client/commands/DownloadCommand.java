@@ -22,14 +22,15 @@ public class DownloadCommand implements TorrentCommand {
         try {
             // TODO read in chunks
             byte[] file = Files.readAllBytes(Path.of(fileSrc));
-            String response = "0 " +
-                file.length +
-                "\n" +
-                new String(file, StandardCharsets.UTF_8); // TODO what happens if there are invalid utf8 chars in file?
+            String header = "0 " + file.length + "\n";
+            byte[] headerBytes = header.getBytes(StandardCharsets.UTF_8);
+            byte[] response = new byte[headerBytes.length + file.length];
+            System.arraycopy(headerBytes, 0, response, 0, headerBytes.length);
+            System.arraycopy(file, 0, response, headerBytes.length, file.length);
             return new TorrentResponse(response);
         } catch (IOException e) {
             e.printStackTrace();
-            return new TorrentResponse("1");
+            return new TorrentResponse("1\n".getBytes(StandardCharsets.UTF_8));
         }
     }
 }

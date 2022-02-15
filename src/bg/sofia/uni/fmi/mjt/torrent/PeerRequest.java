@@ -13,6 +13,7 @@ public class PeerRequest {
     private final String command;
     private final String username;
     private final String payload;
+    private final String rawCommand;
 
     public PeerRequest(String command) throws TorrentRequestException {
         if (command == null) {
@@ -37,6 +38,8 @@ public class PeerRequest {
         } else {
             this.payload = null;
         }
+
+        this.rawCommand = command;
     }
 
     public String command() {
@@ -49,5 +52,9 @@ public class PeerRequest {
 
     public String payload() {
         return this.payload;
+    }
+
+    public String rawCommand() {
+        return this.rawCommand;
     }
 }
