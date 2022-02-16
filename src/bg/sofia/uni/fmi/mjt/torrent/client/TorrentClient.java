@@ -4,9 +4,6 @@ import bg.sofia.uni.fmi.mjt.torrent.Peer;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.util.Scanner;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class TorrentClient {
     private static final int ARG_LENGTH = 3;
@@ -17,19 +14,20 @@ public class TorrentClient {
     private final String torrentServerAddress;
     private final int torrentServerPort;
 
-    public TorrentClient(String torrentServerAddress, int torrentServerPort, String peersFile) {
+    public TorrentClient(String peersFile, String torrentServerAddress, int torrentServerPort) {
         this.torrentServerAddress = torrentServerAddress;
         this.torrentServerPort = torrentServerPort;
         PeersAvailabilityInfo.setPeersFile(peersFile);
     }
 
-    private void startFetchPeersTimer() {
-        Thread fetchPeersTimerThread = new Thread(new FetchPeersTimer(this.torrentServerAddress, torrentServerPort));
+    public Thread startFetchPeersTimer(long fetchIntervalMs) {
+        Thread fetchPeersTimerThread = new Thread(new FetchPeersTimer(fetchIntervalMs, this.torrentServerAddress, torrentServerPort));
         fetchPeersTimerThread.setDaemon(true);
         fetchPeersTimerThread.start();
+        return fetchPeersTimerThread;
     }
 
-    private Peer startPeerRequestListener() throws IOException {
+    public Peer startPeerRequestListener() throws IOException {
         ServerSocket serverSocket = new ServerSocket(0);
         Thread peerRequestListenerThread = new Thread(new PeerRequestListener(serverSocket));
         peerRequestListenerThread.setDaemon(true);
@@ -37,7 +35,7 @@ public class TorrentClient {
         return new Peer(null, serverSocket.getInetAddress().getHostAddress(), serverSocket.getLocalPort());
     }
 
-    private void listenForUserInput(Peer peer) {
+    public void listenForUserInput(Peer peer) {
         UserInputListener userInputListener = new UserInputListener(peer, torrentServerAddress, torrentServerPort);
         userInputListener.run();
     }
@@ -50,9 +48,10 @@ public class TorrentClient {
         int torrentServerPort = Integer.parseInt(args[ARG_TORRENT_SERVER_PORT_IDX]);
         String peersFile = args[ARG_PEERS_FILE_IDX];
 
-        TorrentClient client = new TorrentClient(torrentServerAddress, torrentServerPort, peersFile);
+        TorrentClient client = new TorrentClient(peersFile, torrentServerAddress, torrentServerPort);
         try {
-            client.startFetchPeersTimer();
+            final long fetchPeersIntervalMs = 30_000;
+            client.startFetchPeersTimer(fetchPeersIntervalMs);
             Peer peer = client.startPeerRequestListener();
             client.listenForUserInput(peer);
         } catch (IOException e) {

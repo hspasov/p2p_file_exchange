@@ -17,6 +17,7 @@ public class HelloCommand implements TorrentCommand {
     @Override
     public TorrentResponse execute(PeerRequest request) throws TorrentRequestException {
         if (request.username() == null) {
+            // TODO maybe this should be return TorrentResponse 1?
             throw new TorrentRequestException("Missing user in hello command!");
         }
         if (request.payload() == null) {
@@ -25,10 +26,15 @@ public class HelloCommand implements TorrentCommand {
 
         String[] payloadParts = request.payload().split(PAYLOAD_PARTS_SEPARATOR);
         String address = payloadParts[PAYLOAD_ADDRESS_IDX];
-        String port = payloadParts[PAYLOAD_PORT_IDX];
+        int port;
+        try {
+            port = Integer.parseInt(payloadParts[PAYLOAD_PORT_IDX]);
+        } catch (NumberFormatException e) {
+            throw new TorrentRequestException("Invalid port in hello command!", e);
+        }
 
         FilesAvailabilityInfo filesAvailabilityInfo = FilesAvailabilityInfo.getInstance();
-        filesAvailabilityInfo.setPeerAvailable(new Peer(request.username(), address, Integer.parseInt(port)));
+        filesAvailabilityInfo.setPeerAvailable(new Peer(request.username(), address, port));
         // TODO fix these hardcoded status codes
         return new TorrentResponse("0\n".getBytes(StandardCharsets.UTF_8));
     }

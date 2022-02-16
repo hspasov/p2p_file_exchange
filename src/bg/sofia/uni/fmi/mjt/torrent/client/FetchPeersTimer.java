@@ -17,8 +17,7 @@ import java.util.Map;
 
 public class FetchPeersTimer implements Runnable {
     // TODO inspect if daemon works properly
-    private static final long FETCH_INTERVAL_MS = 30_000;
-
+    private final long fetchIntervalMs;
     private final String torrentServerAddress;
     private final int torrentServerPort;
 
@@ -45,7 +44,9 @@ public class FetchPeersTimer implements Runnable {
         return new Peer(username, address, port);
     }
 
-    public FetchPeersTimer(String torrentServerAddress, int torrentServerPort) {
+    // TODO refactor address and port to -> serverEndpoint
+    public FetchPeersTimer(long fetchIntervalMs, String torrentServerAddress, int torrentServerPort) {
+        this.fetchIntervalMs = fetchIntervalMs;
         this.torrentServerAddress = torrentServerAddress;
         this.torrentServerPort = torrentServerPort;
     }
@@ -87,7 +88,7 @@ public class FetchPeersTimer implements Runnable {
             }
 
             try {
-                Thread.sleep(FETCH_INTERVAL_MS);
+                Thread.sleep(this.fetchIntervalMs);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

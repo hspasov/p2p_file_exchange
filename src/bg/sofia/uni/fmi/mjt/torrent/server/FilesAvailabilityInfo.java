@@ -10,8 +10,8 @@ import java.util.stream.Collectors;
 
 public class FilesAvailabilityInfo {
     // TODO lock only specific user in set methods
-    private final Map<String, Peer> availablePeers;
-    private final Map<String, Set<TorrentFile>> usersAvailableFiles;
+    private Map<String, Peer> availablePeers;
+    private Map<String, Set<TorrentFile>> usersAvailableFiles;
     private static final FilesAvailabilityInfo instance = new FilesAvailabilityInfo();
 
     private FilesAvailabilityInfo() {
@@ -47,6 +47,11 @@ public class FilesAvailabilityInfo {
             this.usersAvailableFiles.remove(username);
             this.availablePeers.remove(username);
         }
+    }
+
+    public synchronized void reset() {
+        this.availablePeers = new HashMap<>();
+        this.usersAvailableFiles = new HashMap<>();
     }
 
     public synchronized Map<String, Peer> getAvailablePeers() {

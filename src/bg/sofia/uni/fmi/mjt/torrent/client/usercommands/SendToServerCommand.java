@@ -41,7 +41,6 @@ public class SendToServerCommand extends TorrentServerRequestor implements UserC
             BufferedReader in = new BufferedReader(
                 new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8)
             );
-            System.out.println("Updating available peers from torrent server...");
             out.println(request.rawCommand());
             String responseHeader = in.readLine();
             int contentLength = getContentLength(responseHeader);

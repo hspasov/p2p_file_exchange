@@ -21,10 +21,6 @@ public class PeerRequest {
         }
 
         String[] commandParts = command.split(COMMAND_PARTS_SEPARATOR, COMMAND_PARTS_COUNT);
-
-        if (commandParts.length <= COMMAND_NAME_IDX) {
-            throw new TorrentRequestException("Missing command name!");
-        }
         this.command = commandParts[COMMAND_NAME_IDX];
 
         if (commandParts.length > USER_IDX) {

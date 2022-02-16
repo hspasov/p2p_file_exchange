@@ -60,10 +60,6 @@ public class PeersAvailabilityInfo {
         }
     }
 
-    public synchronized Map<String, Peer> getAvailablePeers() {
-        return new HashMap<>(this.availablePeers);
-    }
-
     public synchronized Peer getPeer(String username) {
         return this.availablePeers.get(username);
     }
