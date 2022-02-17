@@ -34,7 +34,7 @@ class DefaultLoggerTest {
         when(options.getMinLogLevel()).thenReturn(Level.DEBUG);
         doReturn(DefaultLoggerTest.class).when(options).getClazz();
 
-        LocalDateTime timestamp = LocalDateTime.of(2021,11,27,1,11,3,935601200);
+        LocalDateTime timestamp = LocalDateTime.of(2021, 11,  27, 1, 11, 3, 935601200);
         String msg = "Test message123";
         Level level = Level.DEBUG;
 
@@ -117,7 +117,7 @@ class DefaultLoggerTest {
 
         assertEquals(file1, logger.getCurrentFilePath());
 
-        logger.log(Level.DEBUG,LocalDateTime.now(),"test");
+        logger.log(Level.DEBUG, LocalDateTime.now(),"test");
 
         Path file2 = Path.of("./log/logs-1.txt");
         assertEquals(file2, logger.getCurrentFilePath());

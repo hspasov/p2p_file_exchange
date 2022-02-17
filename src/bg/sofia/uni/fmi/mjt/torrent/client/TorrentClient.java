@@ -1,15 +1,34 @@
 package bg.sofia.uni.fmi.mjt.torrent.client;
 
+import bg.sofia.uni.fmi.mjt.logger.DefaultLogger;
+import bg.sofia.uni.fmi.mjt.logger.Level;
+import bg.sofia.uni.fmi.mjt.logger.Logger;
+import bg.sofia.uni.fmi.mjt.logger.LoggerOptions;
 import bg.sofia.uni.fmi.mjt.torrent.Peer;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.net.ServerSocket;
+import java.time.LocalDateTime;
 
 public class TorrentClient {
     private static final int ARG_LENGTH = 3;
     private static final int ARG_TORRENT_SERVER_ADDRESS_IDX = 0;
     private static final int ARG_TORRENT_SERVER_PORT_IDX = 1;
     private static final int ARG_PEERS_FILE_IDX = 2;
+    private static final int ARG_LOG_DIR_IDX = 3;
+
+    private static Logger logger;
+
+    public static void setLogger(Logger logger) {
+        TorrentClient.logger = logger;
+    }
+
+    public static Logger getLogger() {
+        return TorrentClient.logger;
+    }
 
     private final ServerEndpoint serverEndpoint;
 
@@ -45,6 +64,11 @@ public class TorrentClient {
         String torrentServerAddress = args[ARG_TORRENT_SERVER_ADDRESS_IDX];
         int torrentServerPort = Integer.parseInt(args[ARG_TORRENT_SERVER_PORT_IDX]);
         String peersFile = args[ARG_PEERS_FILE_IDX];
+        String logDir = args[ARG_LOG_DIR_IDX];
+
+        LoggerOptions options = new LoggerOptions(TorrentClient.class, logDir);
+        Logger logger = new DefaultLogger(options);
+        TorrentClient.setLogger(logger);
 
         ServerEndpoint serverEndpoint = new ServerEndpoint(torrentServerAddress, torrentServerPort);
         TorrentClient client = new TorrentClient(peersFile, serverEndpoint);
@@ -54,8 +78,9 @@ public class TorrentClient {
             Peer peer = client.startPeerRequestListener();
             client.listenForUserInput(peer);
         } catch (IOException e) {
-            // TODO
-            e.printStackTrace();
+            Writer writer = new StringWriter();
+            e.printStackTrace(new PrintWriter(writer));
+            logger.log(Level.ERROR, LocalDateTime.now(), writer.toString());
         }
     }
 }

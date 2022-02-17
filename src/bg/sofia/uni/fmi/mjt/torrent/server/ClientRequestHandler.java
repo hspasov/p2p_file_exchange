@@ -1,6 +1,6 @@
 package bg.sofia.uni.fmi.mjt.torrent.server;
 
-import bg.sofia.uni.fmi.mjt.torrent.client.commands.DownloadCommand;
+import bg.sofia.uni.fmi.mjt.logger.Level;
 import bg.sofia.uni.fmi.mjt.torrent.exceptions.TorrentRequestException;
 import bg.sofia.uni.fmi.mjt.torrent.server.commands.HelloCommand;
 import bg.sofia.uni.fmi.mjt.torrent.server.commands.ListFilesCommand;
@@ -12,14 +12,15 @@ import bg.sofia.uni.fmi.mjt.torrent.TorrentResponse;
 import bg.sofia.uni.fmi.mjt.torrent.server.commands.UnregistrationCommand;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 
 public class ClientRequestHandler implements Runnable {
     private final Socket socket;
@@ -37,20 +38,22 @@ public class ClientRequestHandler implements Runnable {
             )
         ) {
             String inputLine = in.readLine();
-            System.out.println("Message received from client: " + inputLine);
-            PeerRequest request = new PeerRequest(inputLine);
-
-            TorrentCommand torrentCommand = ClientRequestHandler.get(request.command());
-            TorrentResponse response = torrentCommand.execute(request);
-            out.write(response.getContent());
-        } catch (IOException | TorrentRequestException e) {
-            System.out.println(e.getMessage());
-        } finally {
+            String msg = "Message received from client: " + inputLine;
+            TorrentServer.getLogger().log(Level.INFO, LocalDateTime.now(), msg);
+            System.out.println(msg);
             try {
-                socket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+                PeerRequest request = new PeerRequest(inputLine);
+                TorrentCommand torrentCommand = ClientRequestHandler.get(request.command());
+                TorrentResponse response = torrentCommand.execute(request);
+                out.write(response.getContent());
+            } catch (TorrentRequestException e) {
+                out.write(TorrentResponse.getFailureHeader().getBytes(StandardCharsets.UTF_8));
             }
+        } catch (IOException e) {
+            Writer writer = new StringWriter();
+            e.printStackTrace(new PrintWriter(writer));
+            TorrentServer.getLogger().log(Level.ERROR, LocalDateTime.now(), writer.toString());
+            System.out.println(e.toString());
         }
     }
 

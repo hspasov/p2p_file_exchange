@@ -1,11 +1,16 @@
 package bg.sofia.uni.fmi.mjt.torrent.client;
 
+import bg.sofia.uni.fmi.mjt.logger.Level;
 import bg.sofia.uni.fmi.mjt.torrent.Peer;
 import bg.sofia.uni.fmi.mjt.torrent.PeerRequest;
 import bg.sofia.uni.fmi.mjt.torrent.client.usercommands.SendToServerCommand;
 import bg.sofia.uni.fmi.mjt.torrent.exceptions.TorrentRequestException;
 import bg.sofia.uni.fmi.mjt.torrent.exceptions.UserCommandException;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.time.LocalDateTime;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -27,11 +32,11 @@ public class UserInputListener {
             PeerRequest request = new PeerRequest(String.join(" ", commandName, username, payload));
             SendToServerCommand command = new SendToServerCommand(this.serverEndpoint);
             command.execute(request);
-        } catch (TorrentRequestException e) {
-            // TODO this should be app error
-            e.printStackTrace();
-        } catch (UserCommandException e) {
-            e.printStackTrace();
+        } catch (TorrentRequestException | UserCommandException e) {
+            Writer writer = new StringWriter();
+            e.printStackTrace(new PrintWriter(writer));
+            TorrentClient.getLogger().log(Level.ERROR, LocalDateTime.now(), writer.toString());
+            System.out.println(e);
         }
     }
 
@@ -47,16 +52,23 @@ public class UserInputListener {
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
-            // TODO validate all commands - forbid extra space, forbid space in usernames
             System.out.print("TorrentClient=# ");
             String command = scanner.nextLine();
+
+            if (command.strip().length() == 0) {
+                continue;
+            }
+
             try {
                 PeerRequest request = new PeerRequest(command);
                 this.identifyOneself(request.username());
                 UserInputHandler userInputHandler = new UserInputHandler(this.self, request, this.serverEndpoint);
                 executor.execute(userInputHandler);
             } catch (TorrentRequestException e) {
-                e.printStackTrace();
+                Writer writer = new StringWriter();
+                e.printStackTrace(new PrintWriter(writer));
+                TorrentClient.getLogger().log(Level.ERROR, LocalDateTime.now(), writer.toString());
+                System.out.println(e);
             }
         }
     }

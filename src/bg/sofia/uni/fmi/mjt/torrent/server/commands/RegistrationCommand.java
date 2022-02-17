@@ -19,7 +19,6 @@ public class RegistrationCommand implements TorrentCommand {
     @Override
     public TorrentResponse execute(PeerRequest request) throws TorrentRequestException {
         if (request.username() == null) {
-            // TODO throw TorrentRequestNoUsernameException
             throw new TorrentRequestException("Missing user in register command!");
         }
         if (request.payload() == null) {

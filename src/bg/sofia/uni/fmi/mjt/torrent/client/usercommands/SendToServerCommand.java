@@ -13,7 +13,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 
 public class SendToServerCommand implements UserCommand {
@@ -43,12 +42,8 @@ public class SendToServerCommand implements UserCommand {
                 String responseLine = in.readLine();
                 System.out.println(responseLine);
             }
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InvalidHeaderException e) {
-            e.printStackTrace();
+        } catch (IOException | InvalidHeaderException e) {
+            throw new UserCommandException("An error has occurred while executing command!", e);
         }
     }
 }

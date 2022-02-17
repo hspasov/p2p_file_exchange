@@ -18,7 +18,6 @@ public class HelloCommand implements TorrentCommand {
     @Override
     public TorrentResponse execute(PeerRequest request) throws TorrentRequestException {
         if (request.username() == null) {
-            // TODO maybe this should be return TorrentResponse 1?
             throw new TorrentRequestException("Missing user in hello command!");
         }
         if (request.payload() == null) {

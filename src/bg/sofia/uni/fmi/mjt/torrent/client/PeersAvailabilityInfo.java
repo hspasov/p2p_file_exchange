@@ -1,15 +1,12 @@
 package bg.sofia.uni.fmi.mjt.torrent.client;
 
 import bg.sofia.uni.fmi.mjt.torrent.Peer;
-import bg.sofia.uni.fmi.mjt.torrent.server.TorrentFile;
 
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class PeersAvailabilityInfo {
     private Map<String, Peer> availablePeers;
@@ -35,7 +32,7 @@ public class PeersAvailabilityInfo {
         return PeersAvailabilityInfo.instance;
     }
 
-    public synchronized void setAvailablePeers(Map<String, Peer> availablePeers) {
+    public synchronized void setAvailablePeers(Map<String, Peer> availablePeers) throws IOException {
         this.availablePeers = new HashMap<>(availablePeers);
 
         try (FileOutputStream out = new FileOutputStream(this.peersFile)) {
@@ -53,10 +50,6 @@ public class PeersAvailabilityInfo {
                 out.write(peerEntry.getBytes(StandardCharsets.UTF_8));
                 out.flush();
             }
-
-            //System.out.println(this.peersFile + " written successfully on disk.");
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 

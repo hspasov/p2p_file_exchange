@@ -1,6 +1,5 @@
 package bg.sofia.uni.fmi.mjt.torrent.client.commands;
 
-import bg.sofia.uni.fmi.mjt.torrent.Peer;
 import bg.sofia.uni.fmi.mjt.torrent.PeerRequest;
 import bg.sofia.uni.fmi.mjt.torrent.TorrentCommand;
 import bg.sofia.uni.fmi.mjt.torrent.TorrentResponse;

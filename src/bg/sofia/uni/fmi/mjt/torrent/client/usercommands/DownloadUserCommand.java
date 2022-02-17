@@ -11,14 +11,12 @@ import bg.sofia.uni.fmi.mjt.torrent.exceptions.UserCommandException;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 
 public class DownloadUserCommand implements UserCommand {

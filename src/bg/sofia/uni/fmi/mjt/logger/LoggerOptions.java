@@ -2,7 +2,7 @@ package bg.sofia.uni.fmi.mjt.logger;
 
 public class LoggerOptions {
 
-    private static final long DEFAULT_MAX_FILE_SIZE_BYTES = 1024;
+    private static final long DEFAULT_MAX_FILE_SIZE_BYTES = 1024 * 1024 * 1024;
     private static final boolean DEFAULT_SHOULD_THROW_ERROR = false;
 
     private final Class<?> clazz;
