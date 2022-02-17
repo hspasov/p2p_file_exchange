@@ -5,6 +5,11 @@ import bg.sofia.uni.fmi.mjt.torrent.TorrentCommand;
 import bg.sofia.uni.fmi.mjt.torrent.TorrentResponse;
 import bg.sofia.uni.fmi.mjt.torrent.client.commands.DownloadCommand;
 import bg.sofia.uni.fmi.mjt.torrent.exceptions.TorrentRequestException;
+import bg.sofia.uni.fmi.mjt.torrent.server.commands.HelloCommand;
+import bg.sofia.uni.fmi.mjt.torrent.server.commands.ListFilesCommand;
+import bg.sofia.uni.fmi.mjt.torrent.server.commands.ListPeersCommand;
+import bg.sofia.uni.fmi.mjt.torrent.server.commands.RegistrationCommand;
+import bg.sofia.uni.fmi.mjt.torrent.server.commands.UnregistrationCommand;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -35,11 +40,7 @@ public class PeerRequestHandler implements Runnable {
             System.out.println("Message received from peer: " + inputLine);
             PeerRequest request = new PeerRequest(inputLine);
 
-            TorrentCommand torrentCommand = switch (request.command()) {
-                case DownloadCommand.COMMAND_NAME -> new DownloadCommand();
-                default -> unknownCommand -> new TorrentResponse("1\n".getBytes(StandardCharsets.UTF_8));
-            };
-            // TODO allow sending in chunks
+            TorrentCommand torrentCommand = PeerRequestHandler.get(request.command());
             TorrentResponse response = torrentCommand.execute(request);
 
             out.write(response.getContent());
@@ -54,5 +55,14 @@ public class PeerRequestHandler implements Runnable {
                 e.printStackTrace();
             }
         }
+    }
+
+    public static TorrentCommand get(String command) {
+        return switch (command) {
+            case DownloadCommand.COMMAND_NAME -> new DownloadCommand();
+            default -> unknownCommand -> new TorrentResponse(
+                TorrentResponse.getFailureHeader().getBytes(StandardCharsets.UTF_8)
+            );
+        };
     }
 }

@@ -9,6 +9,7 @@ import java.util.concurrent.Executors;
 
 public class PeerRequestListener implements Runnable {
     private static final int MAX_EXECUTOR_THREADS = 100;
+    private static final int PEER_CONNECTION_TIMEOUT_MS = 10_000;
     private final ServerSocket serverSocket;
 
     public PeerRequestListener(ServerSocket serverSocket) {
@@ -24,6 +25,7 @@ public class PeerRequestListener implements Runnable {
         while (true) {
             try {
                 Socket peerSocket = this.serverSocket.accept();
+                peerSocket.setSoTimeout(PEER_CONNECTION_TIMEOUT_MS);
                 System.out.println("Accepted connection request from peer " + peerSocket.getInetAddress());
                 PeerRequestHandler peerHandler = new PeerRequestHandler(peerSocket);
                 executor.execute(peerHandler);

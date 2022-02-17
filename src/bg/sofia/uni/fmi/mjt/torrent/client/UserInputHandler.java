@@ -10,22 +10,20 @@ import bg.sofia.uni.fmi.mjt.torrent.exceptions.UserCommandException;
 public class UserInputHandler implements Runnable {
     private final Peer self;
     private final PeerRequest request;
-    private final String torrentServerAddress;
-    private final int torrentServerPort;
+    private final ServerEndpoint serverEndpoint;
 
-    public UserInputHandler(Peer self, PeerRequest request, String torrentServerAddress, int torrentServerPort) {
+    public UserInputHandler(Peer self, PeerRequest request, ServerEndpoint serverEndpoint) {
         this.self = self;
         this.request = request;
-        this.torrentServerAddress = torrentServerAddress;
-        this.torrentServerPort = torrentServerPort;
+        this.serverEndpoint = serverEndpoint;
     }
 
     @Override
     public void run() {
         UserCommand command = switch (request.command()) {
             // TODO replace strings with enum
-            case "register", "unregister", "list-files" -> new SendToServerCommand(this.torrentServerAddress, this.torrentServerPort);
-            case "download" -> new DownloadUserCommand(this.self, this.torrentServerAddress, this.torrentServerPort);
+            case "register", "unregister", "list-files" -> new SendToServerCommand(this.serverEndpoint);
+            case "download" -> new DownloadUserCommand(this.self, this.serverEndpoint);
             default -> invalidCommand -> {
                 throw new UserCommandException("Invalid command!");
             };

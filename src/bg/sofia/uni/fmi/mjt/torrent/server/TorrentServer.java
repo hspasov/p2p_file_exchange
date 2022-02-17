@@ -11,6 +11,7 @@ public class TorrentServer {
     private static final int SERVER_PORT = 3000;
     // TODO check what happens when max threads reached
     private static final int MAX_EXECUTOR_THREADS = 100;
+    private static final int CLIENT_CONNECTION_TIMEOUT_MS = 10_000;
 
     public void run() {
         ExecutorService executor = Executors.newFixedThreadPool(MAX_EXECUTOR_THREADS);
@@ -20,6 +21,7 @@ public class TorrentServer {
 
             while (true) {
                 Socket clientSocket = serverSocket.accept();
+                clientSocket.setSoTimeout(CLIENT_CONNECTION_TIMEOUT_MS);
 
                 System.out.println("Accepted connection request from client " +
                     clientSocket.getInetAddress().getHostAddress() +

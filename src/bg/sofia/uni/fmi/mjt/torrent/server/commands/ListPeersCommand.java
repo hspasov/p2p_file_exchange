@@ -18,7 +18,7 @@ public class ListPeersCommand implements TorrentCommand {
     public TorrentResponse execute(PeerRequest request) {
         FilesAvailabilityInfo filesAvailabilityInfo = FilesAvailabilityInfo.getInstance();
         Map<String, Peer> availablePeers = filesAvailabilityInfo.getAvailablePeers();
-        StringBuilder response = new StringBuilder("0 " + availablePeers.size() + "\n");
+        StringBuilder response = new StringBuilder(TorrentResponse.getSuccessHeader(availablePeers.size()));
 
         for (var entry : availablePeers.entrySet()) {
             String username = entry.getKey();

@@ -30,6 +30,6 @@ public class UnregistrationCommand implements TorrentCommand {
             .collect(Collectors.toSet());
         FilesAvailabilityInfo filesAvailabilityInfo = FilesAvailabilityInfo.getInstance();
         filesAvailabilityInfo.setFilesUnavailable(request.username(), files);
-        return new TorrentResponse("0\n".getBytes(StandardCharsets.UTF_8));
+        return new TorrentResponse(TorrentResponse.getSuccessHeader().getBytes(StandardCharsets.UTF_8));
     }
 }

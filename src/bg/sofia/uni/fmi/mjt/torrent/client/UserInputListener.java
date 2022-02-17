@@ -13,13 +13,11 @@ import java.util.concurrent.Executors;
 public class UserInputListener {
     private static final int MAX_EXECUTOR_THREADS = 100;
     private Peer self;
-    private final String torrentServerAddress;
-    private final int torrentServerPort;
+    private final ServerEndpoint serverEndpoint;
 
-    public UserInputListener(Peer self, String torrentServerAddress, int torrentServerPort) {
+    public UserInputListener(Peer self, ServerEndpoint serverEndpoint) {
         this.self = self;
-        this.torrentServerAddress = torrentServerAddress;
-        this.torrentServerPort = torrentServerPort;
+        this.serverEndpoint = serverEndpoint;
     }
 
     private void sendHelloToServer(String username) {
@@ -27,7 +25,7 @@ public class UserInputListener {
             String commandName = "hello";
             String payload = this.self.address() + ":" + this.self.port();
             PeerRequest request = new PeerRequest(String.join(" ", commandName, username, payload));
-            SendToServerCommand command = new SendToServerCommand(this.torrentServerAddress, this.torrentServerPort);
+            SendToServerCommand command = new SendToServerCommand(this.serverEndpoint);
             command.execute(request);
         } catch (TorrentRequestException e) {
             // TODO this should be app error
@@ -55,7 +53,7 @@ public class UserInputListener {
             try {
                 PeerRequest request = new PeerRequest(command);
                 this.identifyOneself(request.username());
-                UserInputHandler userInputHandler = new UserInputHandler(this.self, request, this.torrentServerAddress, this.torrentServerPort);
+                UserInputHandler userInputHandler = new UserInputHandler(this.self, request, this.serverEndpoint);
                 executor.execute(userInputHandler);
             } catch (TorrentRequestException e) {
                 e.printStackTrace();

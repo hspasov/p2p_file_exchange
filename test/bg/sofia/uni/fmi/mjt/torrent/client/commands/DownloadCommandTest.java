@@ -54,7 +54,17 @@ class DownloadCommandTest {
     }
 
     @Test
-    public void textMissingPayload() throws TorrentRequestException {
+    public void testMissingFile() throws TorrentRequestException {
+        PeerRequest request = new PeerRequest("download sample-user ./nonexistent-file.txt");
+        TorrentCommand command = new DownloadCommand();
+        TorrentResponse response = command.execute(request);
+        String contentDecoded = new String(response.getContent(), StandardCharsets.UTF_8);
+        String expectedContent = "1\n";
+        assertEquals(expectedContent, contentDecoded, "DownloadCommand did not give expected result!");
+    }
+
+    @Test
+    public void testMissingPayload() throws TorrentRequestException {
         PeerRequest request = new PeerRequest("download");
         TorrentCommand command = new DownloadCommand();
         assertThrows(

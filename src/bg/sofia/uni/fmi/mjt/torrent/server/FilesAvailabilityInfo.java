@@ -9,10 +9,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class FilesAvailabilityInfo {
-    // TODO lock only specific user in set methods
     private Map<String, Peer> availablePeers;
     private Map<String, Set<TorrentFile>> usersAvailableFiles;
-    private static final FilesAvailabilityInfo instance = new FilesAvailabilityInfo();
+    private static final FilesAvailabilityInfo INSTANCE = new FilesAvailabilityInfo();
 
     private FilesAvailabilityInfo() {
         this.availablePeers = new HashMap<>();
@@ -20,7 +19,7 @@ public class FilesAvailabilityInfo {
     }
 
     public static FilesAvailabilityInfo getInstance() {
-        return FilesAvailabilityInfo.instance;
+        return FilesAvailabilityInfo.INSTANCE;
     }
 
     public synchronized void setPeerAvailable(Peer peer) {

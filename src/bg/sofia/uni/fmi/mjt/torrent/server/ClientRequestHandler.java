@@ -1,5 +1,6 @@
 package bg.sofia.uni.fmi.mjt.torrent.server;
 
+import bg.sofia.uni.fmi.mjt.torrent.client.commands.DownloadCommand;
 import bg.sofia.uni.fmi.mjt.torrent.exceptions.TorrentRequestException;
 import bg.sofia.uni.fmi.mjt.torrent.server.commands.HelloCommand;
 import bg.sofia.uni.fmi.mjt.torrent.server.commands.ListFilesCommand;
@@ -35,21 +36,12 @@ public class ClientRequestHandler implements Runnable {
                 new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8)
             )
         ) {
-            // TODO check will this block if client does not send a newline?
             String inputLine = in.readLine();
             System.out.println("Message received from client: " + inputLine);
             PeerRequest request = new PeerRequest(inputLine);
 
-            TorrentCommand torrentCommand = switch (request.command()) {
-                case HelloCommand.COMMAND_NAME -> new HelloCommand();
-                case RegistrationCommand.COMMAND_NAME -> new RegistrationCommand();
-                case UnregistrationCommand.COMMAND_NAME -> new UnregistrationCommand();
-                case ListFilesCommand.COMMAND_NAME -> new ListFilesCommand();
-                case ListPeersCommand.COMMAND_NAME -> new ListPeersCommand();
-                default -> unknownCommand -> new TorrentResponse("1\n".getBytes(StandardCharsets.UTF_8));
-            };
+            TorrentCommand torrentCommand = ClientRequestHandler.get(request.command());
             TorrentResponse response = torrentCommand.execute(request);
-            // TODO what is the size limit for out messages?
             out.write(response.getContent());
         } catch (IOException | TorrentRequestException e) {
             System.out.println(e.getMessage());
@@ -60,5 +52,18 @@ public class ClientRequestHandler implements Runnable {
                 e.printStackTrace();
             }
         }
+    }
+
+    public static TorrentCommand get(String command) {
+        return switch (command) {
+            case HelloCommand.COMMAND_NAME -> new HelloCommand();
+            case RegistrationCommand.COMMAND_NAME -> new RegistrationCommand();
+            case UnregistrationCommand.COMMAND_NAME -> new UnregistrationCommand();
+            case ListFilesCommand.COMMAND_NAME -> new ListFilesCommand();
+            case ListPeersCommand.COMMAND_NAME -> new ListPeersCommand();
+            default -> unknownCommand -> new TorrentResponse(
+                TorrentResponse.getFailureHeader().getBytes(StandardCharsets.UTF_8)
+            );
+        };
     }
 }

@@ -36,7 +36,6 @@ public class HelloCommand implements TorrentCommand {
 
         FilesAvailabilityInfo filesAvailabilityInfo = FilesAvailabilityInfo.getInstance();
         filesAvailabilityInfo.setPeerAvailable(new Peer(request.username(), address, port));
-        // TODO fix these hardcoded status codes
-        return new TorrentResponse("0\n".getBytes(StandardCharsets.UTF_8));
+        return new TorrentResponse(TorrentResponse.getSuccessHeader().getBytes(StandardCharsets.UTF_8));
     }
 }

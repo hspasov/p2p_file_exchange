@@ -2,6 +2,8 @@ package bg.sofia.uni.fmi.mjt.torrent.client;
 
 import bg.sofia.uni.fmi.mjt.torrent.Peer;
 import bg.sofia.uni.fmi.mjt.torrent.TorrentResponse;
+import bg.sofia.uni.fmi.mjt.torrent.exceptions.InvalidHeaderException;
+import bg.sofia.uni.fmi.mjt.torrent.exceptions.InvalidPeerException;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -16,46 +18,22 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FetchPeersTimer implements Runnable {
+    private static final int SERVER_CONNECTION_TIMEOUT_MS = 10_000;
+
     // TODO inspect if daemon works properly
     private final long fetchIntervalMs;
-    private final String torrentServerAddress;
-    private final int torrentServerPort;
+    private final ServerEndpoint serverEndpoint;
 
-    private static TorrentResponse parseListPeersResponse(String response) {
-        final String responsePartsSeparator = " ";
-        final int statusCodeIdx = 0;
-        final int peersCountIdx = 1;
-        String[] responseParts = response.split(responsePartsSeparator);
-        String statusCode = responseParts[statusCodeIdx];
-        int peersCount = Integer.parseInt(responseParts[peersCountIdx]);
-        return new TorrentResponse(statusCode.getBytes(StandardCharsets.UTF_8), peersCount);
-    }
-
-    private static Peer parsePeerResponse(String input) {
-        // TODO validate input
-        final String responsePartsSeparator = " ";
-        final int usernameIdx = 0;
-        final int addressIdx = 1;
-        final int portIdx = 2;
-        String[] peerParts = input.split(responsePartsSeparator);
-        String username = peerParts[usernameIdx];
-        String address = peerParts[addressIdx];
-        int port = Integer.parseInt(peerParts[portIdx]);
-        return new Peer(username, address, port);
-    }
-
-    // TODO refactor address and port to -> serverEndpoint
-    public FetchPeersTimer(long fetchIntervalMs, String torrentServerAddress, int torrentServerPort) {
+    public FetchPeersTimer(long fetchIntervalMs, ServerEndpoint serverEndpoint) {
         this.fetchIntervalMs = fetchIntervalMs;
-        this.torrentServerAddress = torrentServerAddress;
-        this.torrentServerPort = torrentServerPort;
+        this.serverEndpoint = serverEndpoint;
     }
 
     @Override
     public void run() {
         while (true) {
-            // TODO if cannot connect to server, load peer data from file
-            try (Socket socket = new Socket(this.torrentServerAddress, this.torrentServerPort)) {
+            try (Socket socket = new Socket(this.serverEndpoint.address(), this.serverEndpoint.port())) {
+                socket.setSoTimeout(SERVER_CONNECTION_TIMEOUT_MS);
                 PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(
                     socket.getOutputStream(), StandardCharsets.UTF_8
                 )), true);
@@ -66,15 +44,14 @@ public class FetchPeersTimer implements Runnable {
                 out.println("list-peers");
                 String response = in.readLine();
                 //System.out.println("Response from server: " + response);
-                TorrentResponse listPeersResponse = parseListPeersResponse(response);
+                int peersCount = TorrentResponse.getContentLength(response);
 
                 Map<String, Peer> availablePeers = new HashMap<>();
 
-                // TODO include timeout
-                for (int peersRead = 0; peersRead < listPeersResponse.contentLength(); peersRead++) {
+                for (int peersRead = 0; peersRead < peersCount; peersRead++) {
                     String peerUnparsed = in.readLine();
                     //System.out.println("Response from server: " + peerUnparsed);
-                    Peer peer = parsePeerResponse(peerUnparsed);
+                    Peer peer = Peer.of(peerUnparsed);
                     availablePeers.put(peer.username(), peer);
                 }
 
@@ -84,6 +61,10 @@ public class FetchPeersTimer implements Runnable {
             } catch (UnknownHostException e) {
                 e.printStackTrace();
             } catch (IOException e) {
+                e.printStackTrace();
+            } catch (InvalidPeerException e) {
+                e.printStackTrace();
+            } catch (InvalidHeaderException e) {
                 e.printStackTrace();
             }
 

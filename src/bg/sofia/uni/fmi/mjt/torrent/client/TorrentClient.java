@@ -11,17 +11,15 @@ public class TorrentClient {
     private static final int ARG_TORRENT_SERVER_PORT_IDX = 1;
     private static final int ARG_PEERS_FILE_IDX = 2;
 
-    private final String torrentServerAddress;
-    private final int torrentServerPort;
+    private final ServerEndpoint serverEndpoint;
 
-    public TorrentClient(String peersFile, String torrentServerAddress, int torrentServerPort) {
-        this.torrentServerAddress = torrentServerAddress;
-        this.torrentServerPort = torrentServerPort;
+    public TorrentClient(String peersFile, ServerEndpoint serverEndpoint) {
+        this.serverEndpoint = serverEndpoint;
         PeersAvailabilityInfo.setPeersFile(peersFile);
     }
 
     public Thread startFetchPeersTimer(long fetchIntervalMs) {
-        Thread fetchPeersTimerThread = new Thread(new FetchPeersTimer(fetchIntervalMs, this.torrentServerAddress, torrentServerPort));
+        Thread fetchPeersTimerThread = new Thread(new FetchPeersTimer(fetchIntervalMs, this.serverEndpoint));
         fetchPeersTimerThread.setDaemon(true);
         fetchPeersTimerThread.start();
         return fetchPeersTimerThread;
@@ -36,7 +34,7 @@ public class TorrentClient {
     }
 
     public void listenForUserInput(Peer peer) {
-        UserInputListener userInputListener = new UserInputListener(peer, torrentServerAddress, torrentServerPort);
+        UserInputListener userInputListener = new UserInputListener(peer, this.serverEndpoint);
         userInputListener.run();
     }
 
@@ -48,7 +46,8 @@ public class TorrentClient {
         int torrentServerPort = Integer.parseInt(args[ARG_TORRENT_SERVER_PORT_IDX]);
         String peersFile = args[ARG_PEERS_FILE_IDX];
 
-        TorrentClient client = new TorrentClient(peersFile, torrentServerAddress, torrentServerPort);
+        ServerEndpoint serverEndpoint = new ServerEndpoint(torrentServerAddress, torrentServerPort);
+        TorrentClient client = new TorrentClient(peersFile, serverEndpoint);
         try {
             final long fetchPeersIntervalMs = 30_000;
             client.startFetchPeersTimer(fetchPeersIntervalMs);

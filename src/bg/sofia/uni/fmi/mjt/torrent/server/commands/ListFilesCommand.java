@@ -32,7 +32,7 @@ public class ListFilesCommand implements TorrentCommand {
                     .append(ENTRY_SEPARATOR);
             }
         }
-        StringBuilder response = new StringBuilder("0 " + contentSize + "\n");
+        StringBuilder response = new StringBuilder(TorrentResponse.getSuccessHeader(contentSize));
         response.append(content);
         return new TorrentResponse(response.toString().getBytes(StandardCharsets.UTF_8));
     }

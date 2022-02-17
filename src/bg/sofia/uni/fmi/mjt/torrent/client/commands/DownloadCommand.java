@@ -22,17 +22,15 @@ public class DownloadCommand implements TorrentCommand {
         String fileSrc = request.payload();
 
         try {
-            // TODO read in chunks
             byte[] file = Files.readAllBytes(Path.of(fileSrc));
-            String header = "0 " + file.length + "\n";
+            String header = TorrentResponse.getSuccessHeader(file.length);
             byte[] headerBytes = header.getBytes(StandardCharsets.UTF_8);
             byte[] response = new byte[headerBytes.length + file.length];
             System.arraycopy(headerBytes, 0, response, 0, headerBytes.length);
             System.arraycopy(file, 0, response, headerBytes.length, file.length);
             return new TorrentResponse(response);
         } catch (IOException e) {
-            e.printStackTrace();
-            return new TorrentResponse("1\n".getBytes(StandardCharsets.UTF_8));
+            return new TorrentResponse(TorrentResponse.getFailureHeader().getBytes(StandardCharsets.UTF_8));
         }
     }
 }

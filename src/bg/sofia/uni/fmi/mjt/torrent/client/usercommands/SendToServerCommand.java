@@ -1,7 +1,9 @@
 package bg.sofia.uni.fmi.mjt.torrent.client.usercommands;
 
 import bg.sofia.uni.fmi.mjt.torrent.PeerRequest;
-import bg.sofia.uni.fmi.mjt.torrent.client.TorrentServerRequestor;
+import bg.sofia.uni.fmi.mjt.torrent.TorrentResponse;
+import bg.sofia.uni.fmi.mjt.torrent.client.ServerEndpoint;
+import bg.sofia.uni.fmi.mjt.torrent.exceptions.InvalidHeaderException;
 import bg.sofia.uni.fmi.mjt.torrent.exceptions.UserCommandException;
 
 import java.io.BufferedReader;
@@ -14,27 +16,17 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 
-public class SendToServerCommand extends TorrentServerRequestor implements UserCommand {
-    private static final String SERVER_RESPONSE_HEADER_PARTS_SEPARATOR = " ";
-    private static final int SERVER_RESPONSE_HEADER_PARTS_COUNT = 2;
-    private static final int PART_STATUS_IDX = 0;
-    private static final int PART_CONTENT_LENGTH_IDX = 1;
+public class SendToServerCommand implements UserCommand {
+    private final ServerEndpoint serverEndpoint;
 
-    public SendToServerCommand(String torrentServerAddress, int torrentServerPort) {
-        super(torrentServerAddress, torrentServerPort);
-    }
-
-    private static int getContentLength(String serverResponse) {
-        String[] serverResponseParts = serverResponse.split(SERVER_RESPONSE_HEADER_PARTS_SEPARATOR);
-        if (serverResponseParts.length < SERVER_RESPONSE_HEADER_PARTS_COUNT) {
-            return 0;
-        }
-        return Integer.parseInt(serverResponseParts[PART_CONTENT_LENGTH_IDX]);
+    public SendToServerCommand(ServerEndpoint serverEndpoint) {
+        this.serverEndpoint = serverEndpoint;
     }
 
     @Override
     public void execute(PeerRequest request) throws UserCommandException {
-        try (Socket socket = new Socket(this.getTorrentServerAddress(), this.getTorrentServerPort())) {
+        try (Socket socket = new Socket(this.serverEndpoint.address(), this.serverEndpoint.port())) {
+            socket.setSoTimeout(SERVER_CONNECTION_TIMEOUT_MS);
             PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(
                 socket.getOutputStream(), StandardCharsets.UTF_8
             )), true);
@@ -43,7 +35,7 @@ public class SendToServerCommand extends TorrentServerRequestor implements UserC
             );
             out.println(request.rawCommand());
             String responseHeader = in.readLine();
-            int contentLength = getContentLength(responseHeader);
+            int contentLength = TorrentResponse.getContentLength(responseHeader);
             if (contentLength == 0) {
                 return;
             }
@@ -54,6 +46,8 @@ public class SendToServerCommand extends TorrentServerRequestor implements UserC
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InvalidHeaderException e) {
             e.printStackTrace();
         }
     }
