@@ -20,12 +20,4 @@ class TorrentClientTest {
         assertNotNull(peer, "Peer must not be null!");
         assertNull(peer.username(), "Peer username must be null when client is just initialized!");
     }
-
-    @Test
-    public void startFetchPeersTimer() {
-        final int fetchIntervalMs = 10_000;
-        TorrentClient torrentClient = new TorrentClient(PEERS_FILE, SERVER_ENDPOINT);
-        Thread thread = torrentClient.startFetchPeersTimer(fetchIntervalMs);
-        assertTrue(thread.isAlive(), "Expected thread to be alive!");
-    }
 }
