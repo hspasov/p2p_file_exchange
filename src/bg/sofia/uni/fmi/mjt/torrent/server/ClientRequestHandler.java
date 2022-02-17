@@ -41,11 +41,11 @@ public class ClientRequestHandler implements Runnable {
             PeerRequest request = new PeerRequest(inputLine);
 
             TorrentCommand torrentCommand = switch (request.command()) {
-                case "hello" -> new HelloCommand();
-                case "register" -> new RegistrationCommand();
-                case "unregister" -> new UnregistrationCommand();
-                case "list-files" -> new ListFilesCommand();
-                case "list-peers" -> new ListPeersCommand();
+                case HelloCommand.COMMAND_NAME -> new HelloCommand();
+                case RegistrationCommand.COMMAND_NAME -> new RegistrationCommand();
+                case UnregistrationCommand.COMMAND_NAME -> new UnregistrationCommand();
+                case ListFilesCommand.COMMAND_NAME -> new ListFilesCommand();
+                case ListPeersCommand.COMMAND_NAME -> new ListPeersCommand();
                 default -> unknownCommand -> new TorrentResponse("1\n".getBytes(StandardCharsets.UTF_8));
             };
             TorrentResponse response = torrentCommand.execute(request);

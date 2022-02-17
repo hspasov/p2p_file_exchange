@@ -36,7 +36,7 @@ public class PeerRequestHandler implements Runnable {
             PeerRequest request = new PeerRequest(inputLine);
 
             TorrentCommand torrentCommand = switch (request.command()) {
-                case "download" -> new DownloadCommand();
+                case DownloadCommand.COMMAND_NAME -> new DownloadCommand();
                 default -> unknownCommand -> new TorrentResponse("1\n".getBytes(StandardCharsets.UTF_8));
             };
             // TODO allow sending in chunks

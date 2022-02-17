@@ -12,6 +12,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class DownloadCommand implements TorrentCommand {
+    public static final String COMMAND_NAME = "download";
+
     @Override
     public TorrentResponse execute(PeerRequest request) throws TorrentRequestException {
         if (request.payload() == null) {

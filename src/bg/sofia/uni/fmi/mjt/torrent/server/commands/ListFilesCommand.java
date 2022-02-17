@@ -11,8 +11,9 @@ import java.util.Map;
 import java.util.Set;
 
 public class ListFilesCommand implements TorrentCommand {
-    private static final String ENTRY_SEPARATOR = "\n";
-    private static final String USER_FILEPATH_SEPARATOR = " : ";
+    public static final String COMMAND_NAME = "list-files";
+    public static final String ENTRY_SEPARATOR = "\n";
+    public static final String USER_FILEPATH_SEPARATOR = " : ";
 
     @Override
     public TorrentResponse execute(PeerRequest request) {

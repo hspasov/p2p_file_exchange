@@ -13,11 +13,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class RegistrationCommand implements TorrentCommand {
-    private static final String FILES_SEPARATOR = ", ";
+    public static final String COMMAND_NAME = "register";
+    public static final String FILES_SEPARATOR = ", ";
 
     @Override
     public TorrentResponse execute(PeerRequest request) throws TorrentRequestException {
         if (request.username() == null) {
+            // TODO throw TorrentRequestNoUsernameException
             throw new TorrentRequestException("Missing user in register command!");
         }
         if (request.payload() == null) {

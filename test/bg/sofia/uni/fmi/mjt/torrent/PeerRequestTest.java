@@ -17,7 +17,7 @@ class PeerRequestTest {
 
     @Test
     public void testCommandWithoutUsername() throws TorrentRequestException {
-        String command = "command";
+        final String command = "command";
         PeerRequest request = new PeerRequest(command);
         assertEquals(command, request.command(), "Command does not match!");
         assertNull(request.username(), "Expected username to be null!");
@@ -26,8 +26,8 @@ class PeerRequestTest {
 
     @Test
     public void testCommandWithoutPayload() throws TorrentRequestException {
-        String command = "command";
-        String username = "user";
+        final String command = "command";
+        final String username = "user";
         PeerRequest request = new PeerRequest(String.join(" ", command, username));
         assertEquals(command, request.command(), "Command does not match!");
         assertEquals(username, request.username(), "Username does not match!");
@@ -36,10 +36,10 @@ class PeerRequestTest {
 
     @Test
     public void testCommandWithPayload() throws TorrentRequestException {
-        String command = "command";
-        String username = "user";
-        String payload = "sample payload";
-        String rawCommand = String.join(" ", command, username, payload);
+        final String command = "command";
+        final String username = "user";
+        final String payload = "sample payload";
+        final String rawCommand = String.join(" ", command, username, payload);
         PeerRequest request = new PeerRequest(rawCommand);
         assertEquals(command, request.command(), "Command does not match!");
         assertEquals(username, request.username(), "Username does not match!");

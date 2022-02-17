@@ -13,7 +13,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class UnregistrationCommand implements TorrentCommand {
-    private static final String FILES_SEPARATOR = ", ";
+    public static final String COMMAND_NAME = "unregister";
+    public static final String FILES_SEPARATOR = ", ";
 
     @Override
     public TorrentResponse execute(PeerRequest request) throws TorrentRequestException {

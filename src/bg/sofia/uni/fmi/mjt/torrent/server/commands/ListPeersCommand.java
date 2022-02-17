@@ -10,8 +10,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 public class ListPeersCommand implements TorrentCommand {
-    private static final String ENTRY_SEPARATOR = "\n";
-    private static final String PEER_PROPERTY_SEPARATOR = " ";
+    public static final String COMMAND_NAME = "list-peers";
+    public static final String ENTRY_SEPARATOR = "\n";
+    public static final String PEER_PROPERTY_SEPARATOR = " ";
 
     @Override
     public TorrentResponse execute(PeerRequest request) {

@@ -10,7 +10,8 @@ import bg.sofia.uni.fmi.mjt.torrent.Peer;
 import java.nio.charset.StandardCharsets;
 
 public class HelloCommand implements TorrentCommand {
-    private static final String PAYLOAD_PARTS_SEPARATOR = ":";
+    public static final String COMMAND_NAME = "hello";
+    public static final String PAYLOAD_PARTS_SEPARATOR = ":";
     private static final int PAYLOAD_ADDRESS_IDX = 0;
     private static final int PAYLOAD_PORT_IDX = 1;
 

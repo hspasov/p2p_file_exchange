@@ -24,7 +24,6 @@ public class FilesAvailabilityInfo {
     }
 
     public synchronized void setPeerAvailable(Peer peer) {
-        // TODO forget after period of time
         this.availablePeers.put(peer.username(), peer);
         this.usersAvailableFiles.putIfAbsent(peer.username(), new HashSet<>());
     }
@@ -43,10 +42,6 @@ public class FilesAvailabilityInfo {
             return;
         }
         userAvailableFiles.removeAll(files);
-        if (userAvailableFiles.isEmpty()) {
-            this.usersAvailableFiles.remove(username);
-            this.availablePeers.remove(username);
-        }
     }
 
     public synchronized void reset() {

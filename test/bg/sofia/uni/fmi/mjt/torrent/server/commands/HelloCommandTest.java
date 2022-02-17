@@ -6,33 +6,17 @@ import bg.sofia.uni.fmi.mjt.torrent.TorrentCommand;
 import bg.sofia.uni.fmi.mjt.torrent.TorrentResponse;
 import bg.sofia.uni.fmi.mjt.torrent.exceptions.TorrentRequestException;
 import bg.sofia.uni.fmi.mjt.torrent.server.FilesAvailabilityInfo;
-import bg.sofia.uni.fmi.mjt.torrent.server.TorrentFile;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class HelloCommandTest {
-    private static final String COMMAND_PARTS_SEPARATOR = " ";
-    private static final String COMMAND_NAME = "hello";
-    private static final String TEST_USERNAME = "test-peer";
-    private static final String TEST_ADDRESS = "0.0.0.0";
-    private static final String PAYLOAD_PARTS_SEPARATOR = ":";
-
-    @BeforeEach
-    private void setUp() {
-        FilesAvailabilityInfo filesAvailabilityInfo = FilesAvailabilityInfo.getInstance();
-        filesAvailabilityInfo.reset();
-    }
-
+class HelloCommandTest extends TorrentCommandTest {
     @Test
     public void testEmptyUsername() throws TorrentRequestException {
-        PeerRequest request = new PeerRequest(COMMAND_NAME);
+        PeerRequest request = new PeerRequest(HelloCommand.COMMAND_NAME);
         TorrentCommand command = new HelloCommand();
         assertThrows(
             TorrentRequestException.class,
@@ -43,7 +27,9 @@ class HelloCommandTest {
 
     @Test
     public void testEmptyPayload() throws TorrentRequestException {
-        PeerRequest request = new PeerRequest(String.join(COMMAND_PARTS_SEPARATOR, COMMAND_NAME, TEST_USERNAME));
+        PeerRequest request = new PeerRequest(
+            String.join(COMMAND_PARTS_SEPARATOR, HelloCommand.COMMAND_NAME, TEST_PEER1.username())
+        );
         TorrentCommand command = new HelloCommand();
         assertThrows(
             TorrentRequestException.class,
@@ -58,9 +44,9 @@ class HelloCommandTest {
         PeerRequest request = new PeerRequest(
             String.join(
                 COMMAND_PARTS_SEPARATOR,
-                COMMAND_NAME,
-                TEST_USERNAME,
-                String.join(PAYLOAD_PARTS_SEPARATOR, TEST_ADDRESS, invalidPort)
+                HelloCommand.COMMAND_NAME,
+                TEST_PEER1.username(),
+                String.join(HelloCommand.PAYLOAD_PARTS_SEPARATOR, TEST_ADDRESS, invalidPort)
             )
         );
         TorrentCommand command = new HelloCommand();
@@ -77,9 +63,9 @@ class HelloCommandTest {
         PeerRequest request = new PeerRequest(
             String.join(
                 COMMAND_PARTS_SEPARATOR,
-                COMMAND_NAME,
-                TEST_USERNAME,
-                String.join(PAYLOAD_PARTS_SEPARATOR, TEST_ADDRESS, Integer.toString(port))
+                HelloCommand.COMMAND_NAME,
+                TEST_PEER1.username(),
+                String.join(HelloCommand.PAYLOAD_PARTS_SEPARATOR, TEST_ADDRESS, Integer.toString(port))
             )
         );
         TorrentCommand command = new HelloCommand();
@@ -91,10 +77,10 @@ class HelloCommandTest {
 
         FilesAvailabilityInfo filesAvailabilityInfo = FilesAvailabilityInfo.getInstance();
         Map<String, Peer> availablePeers = filesAvailabilityInfo.getAvailablePeers();
-        Peer peer = availablePeers.get(TEST_USERNAME);
+        Peer peer = availablePeers.get(TEST_PEER1.username());
 
         assertNotNull(peer, "Peer must not be null!");
-        assertEquals(TEST_USERNAME, peer.username(), "Unexpected username of saved peer!");
+        assertEquals(TEST_PEER1.username(), peer.username(), "Unexpected username of saved peer!");
         assertEquals(port, peer.port(), "Unexpected port of saved peer!");
         assertEquals(TEST_ADDRESS, peer.address(), "Unexpected address of saved peer!");
     }

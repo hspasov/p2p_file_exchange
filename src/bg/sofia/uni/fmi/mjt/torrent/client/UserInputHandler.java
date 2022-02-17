@@ -23,6 +23,7 @@ public class UserInputHandler implements Runnable {
     @Override
     public void run() {
         UserCommand command = switch (request.command()) {
+            // TODO replace strings with enum
             case "register", "unregister", "list-files" -> new SendToServerCommand(this.torrentServerAddress, this.torrentServerPort);
             case "download" -> new DownloadUserCommand(this.self, this.torrentServerAddress, this.torrentServerPort);
             default -> invalidCommand -> {
