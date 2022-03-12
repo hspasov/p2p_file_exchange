@@ -34,6 +34,12 @@ public class SendToServerCommand implements UserCommand {
             );
             out.println(request.rawCommand());
             String responseHeader = in.readLine();
+
+            String statusCode = TorrentResponse.getStatusCode(responseHeader);
+            if (!TorrentResponse.SUCCESS_CODE.equals(statusCode)) {
+                throw new UserCommandException("Failure status code returned from server!");
+            }
+
             int contentLength = TorrentResponse.getContentLength(responseHeader);
             if (contentLength == 0) {
                 return;

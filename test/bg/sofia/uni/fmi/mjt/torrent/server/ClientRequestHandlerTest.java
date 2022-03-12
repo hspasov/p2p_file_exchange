@@ -2,8 +2,6 @@ package bg.sofia.uni.fmi.mjt.torrent.server;
 
 import bg.sofia.uni.fmi.mjt.torrent.TorrentCommand;
 import bg.sofia.uni.fmi.mjt.torrent.TorrentResponse;
-import bg.sofia.uni.fmi.mjt.torrent.client.PeerRequestHandler;
-import bg.sofia.uni.fmi.mjt.torrent.client.commands.DownloadCommand;
 import bg.sofia.uni.fmi.mjt.torrent.exceptions.TorrentRequestException;
 import bg.sofia.uni.fmi.mjt.torrent.server.commands.HelloCommand;
 import bg.sofia.uni.fmi.mjt.torrent.server.commands.ListFilesCommand;

@@ -53,7 +53,7 @@ public class ClientRequestHandler implements Runnable {
             Writer writer = new StringWriter();
             e.printStackTrace(new PrintWriter(writer));
             TorrentServer.getLogger().log(Level.ERROR, LocalDateTime.now(), writer.toString());
-            System.out.println(e.toString());
+            System.out.println(e);
         }
     }
 

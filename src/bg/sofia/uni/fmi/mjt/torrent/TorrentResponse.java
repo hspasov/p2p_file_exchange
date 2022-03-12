@@ -9,9 +9,10 @@ import java.nio.charset.StandardCharsets;
 public class TorrentResponse {
     public static final String HEADER_PARTS_SEPARATOR = " ";
     public static final int HEADER_PARTS_COUNT = 2;
+    public static final int PART_STATUS_CODE_IDX = 0;
     public static final int PART_CONTENT_LENGTH_IDX = 1;
-    private static final String SUCCESS_CODE = "0";
-    private static final String FAILURE_CODE = "1";
+    public static final String SUCCESS_CODE = "0";
+    public static final String FAILURE_CODE = "1";
     private static final String HEADER_END = "\n";
 
     private final byte[] content;
@@ -63,6 +64,17 @@ public class TorrentResponse {
         } catch (NumberFormatException e) {
             throw new InvalidHeaderException("Content length is not a number!", e);
         }
+    }
+
+    public static String getStatusCode(String header) {
+        if (header == null) {
+            return null;
+        }
+        String[] headerParts = header.split(HEADER_PARTS_SEPARATOR);
+        if (headerParts.length <= PART_STATUS_CODE_IDX) {
+            return null;
+        }
+        return headerParts[PART_STATUS_CODE_IDX];
     }
 
     public static String getSuccessHeader() {

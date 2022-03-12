@@ -20,7 +20,8 @@ public class PeerRequest {
             throw new TorrentRequestException("Invalid command!");
         }
 
-        String[] commandParts = command.split(COMMAND_PARTS_SEPARATOR, COMMAND_PARTS_COUNT);
+        String commandWhitespaceCleaned = command.strip().replaceAll(" +", " ");
+        String[] commandParts = commandWhitespaceCleaned.split(COMMAND_PARTS_SEPARATOR, COMMAND_PARTS_COUNT);
         this.command = commandParts[COMMAND_NAME_IDX];
 
         if (commandParts.length > USER_IDX) {

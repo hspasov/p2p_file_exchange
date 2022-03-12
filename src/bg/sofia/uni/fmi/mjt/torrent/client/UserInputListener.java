@@ -4,6 +4,7 @@ import bg.sofia.uni.fmi.mjt.logger.Level;
 import bg.sofia.uni.fmi.mjt.torrent.Peer;
 import bg.sofia.uni.fmi.mjt.torrent.PeerRequest;
 import bg.sofia.uni.fmi.mjt.torrent.client.usercommands.SendToServerCommand;
+import bg.sofia.uni.fmi.mjt.torrent.client.usercommands.UserCommand;
 import bg.sofia.uni.fmi.mjt.torrent.exceptions.TorrentRequestException;
 import bg.sofia.uni.fmi.mjt.torrent.exceptions.UserCommandException;
 
@@ -36,7 +37,6 @@ public class UserInputListener {
             Writer writer = new StringWriter();
             e.printStackTrace(new PrintWriter(writer));
             TorrentClient.getLogger().log(Level.ERROR, LocalDateTime.now(), writer.toString());
-            System.out.println(e);
         }
     }
 
@@ -61,14 +61,16 @@ public class UserInputListener {
 
             try {
                 PeerRequest request = new PeerRequest(command);
-                this.identifyOneself(request.username());
+                if (UserCommand.REGISTER_COMMAND.equals(request.command())) {
+                    this.identifyOneself(request.username());
+                }
                 UserInputHandler userInputHandler = new UserInputHandler(this.self, request, this.serverEndpoint);
                 executor.execute(userInputHandler);
             } catch (TorrentRequestException e) {
                 Writer writer = new StringWriter();
                 e.printStackTrace(new PrintWriter(writer));
                 TorrentClient.getLogger().log(Level.ERROR, LocalDateTime.now(), writer.toString());
-                System.out.println(e);
+                System.out.println(e.getMessage());
             }
         }
     }

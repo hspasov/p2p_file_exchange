@@ -21,7 +21,7 @@ import java.nio.charset.StandardCharsets;
 
 public class DownloadUserCommand implements UserCommand {
     private static final String PAYLOAD_PARTS_SEPARATOR = " ";
-    private static final int PAYLOAD_PARTS_COUNT = 3;
+    private static final int PAYLOAD_PARTS_COUNT = 2;
     private static final int PAYLOAD_SRC_IDX = 0;
     private static final int PAYLOAD_DEST_IDX = 1;
 
@@ -39,7 +39,7 @@ public class DownloadUserCommand implements UserCommand {
     }
 
     private static byte[] receiveFileFromPeer(Peer peer, String commandToPeer)
-        throws IOException, InvalidHeaderException {
+        throws IOException, InvalidHeaderException, UserCommandException {
         try (Socket socket = new Socket(peer.address(), peer.port())) {
             socket.setSoTimeout(SERVER_CONNECTION_TIMEOUT_MS);
             PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(
@@ -48,6 +48,12 @@ public class DownloadUserCommand implements UserCommand {
             InputStream inputStream = socket.getInputStream();
             out.println(commandToPeer);
             String responseHeader = TorrentResponse.readResponseHeader(inputStream);
+            String statusCode = TorrentResponse.getStatusCode(responseHeader);
+
+            if (!TorrentResponse.SUCCESS_CODE.equals(statusCode)) {
+                throw new UserCommandException("Peer returned failure status code on download command!");
+            }
+
             int contentLength = TorrentResponse.getContentLength(responseHeader);
             return inputStream.readNBytes(contentLength);
         }
@@ -62,6 +68,11 @@ public class DownloadUserCommand implements UserCommand {
     }
 
     private void sendRegisterToServer(String filePath) throws UserCommandException, TorrentRequestException {
+        if (this.self.username() == null) {
+            throw new UserCommandException("Could not auto register downloaded file to server because " +
+                "username is not set. The file needs to be registered manually.");
+        }
+
         PeerRequest registerRequest = new PeerRequest(String.join(
             PAYLOAD_PARTS_SEPARATOR, "register", this.self.username(), filePath
         ));
@@ -71,7 +82,13 @@ public class DownloadUserCommand implements UserCommand {
 
     @Override
     public void execute(PeerRequest request) throws UserCommandException {
-        String[] payloadParts = request.payload().split(PAYLOAD_PARTS_SEPARATOR, PAYLOAD_PARTS_COUNT);
+        String payloadWhitespaceCleaned = request.payload().strip().replaceAll(" +", " ");
+        String[] payloadParts = payloadWhitespaceCleaned.split(PAYLOAD_PARTS_SEPARATOR, PAYLOAD_PARTS_COUNT);
+
+        if (payloadParts.length != PAYLOAD_PARTS_COUNT) {
+            throw new UserCommandException("Download command expects source and destination to be provided!");
+        }
+
         String peerUsername = request.username();
         String src = payloadParts[PAYLOAD_SRC_IDX];
         String dest = payloadParts[PAYLOAD_DEST_IDX];

@@ -27,8 +27,10 @@ public class UserInputHandler implements Runnable {
     @Override
     public void run() {
         UserCommand command = switch (request.command()) {
-            case "register", "unregister", "list-files" -> new SendToServerCommand(this.serverEndpoint);
-            case "download" -> new DownloadUserCommand(this.self, this.serverEndpoint);
+            case
+                UserCommand.REGISTER_COMMAND, UserCommand.UNREGISTER_COMMAND, UserCommand.LIST_FILES_COMMAND
+                    -> new SendToServerCommand(this.serverEndpoint);
+            case UserCommand.DOWNLOAD_COMMAND -> new DownloadUserCommand(this.self, this.serverEndpoint);
             default -> invalidCommand -> {
                 throw new UserCommandException("Invalid command!");
             };
@@ -39,7 +41,7 @@ public class UserInputHandler implements Runnable {
             Writer writer = new StringWriter();
             e.printStackTrace(new PrintWriter(writer));
             TorrentClient.getLogger().log(Level.ERROR, LocalDateTime.now(), writer.toString());
-            System.out.println(e);
+            System.out.println(e.getMessage());
         }
     }
 }
