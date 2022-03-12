@@ -1,6 +1,7 @@
 package bg.sofia.uni.fmi.mjt.torrent.client;
 
 import bg.sofia.uni.fmi.mjt.logger.Level;
+import bg.sofia.uni.fmi.mjt.logger.Logger;
 import bg.sofia.uni.fmi.mjt.torrent.Peer;
 
 import java.io.BufferedReader;
@@ -62,7 +63,10 @@ public class PeersAvailabilityInfo {
         } catch (IOException e) {
             Writer writer = new StringWriter();
             e.printStackTrace(new PrintWriter(writer));
-            TorrentClient.getLogger().log(Level.ERROR, LocalDateTime.now(), writer.toString());
+            Logger logger = TorrentClient.getLogger();
+            if (logger != null) {
+                logger.log(Level.ERROR, LocalDateTime.now(), writer.toString());
+            }
         }
     }
 
